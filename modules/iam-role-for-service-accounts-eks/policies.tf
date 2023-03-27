@@ -891,6 +891,30 @@ data "aws_iam_policy_document" "load_balancer_controller" {
     ]
     resources = ["*"]
   }
+  
+  statement {
+    actions = [
+      "elasticloadbalancing:AddTags"
+    ],
+    resources = [
+      "arn:aws:elasticloadbalancing:*:*:targetgroup/*/*",
+      "arn:aws:elasticloadbalancing:*:*:loadbalancer/net/*/*",
+      "arn:aws:elasticloadbalancing:*:*:loadbalancer/app/*/*"
+    ],
+    condition {
+      test     = "StringEquals"
+      variable = "elasticloadbalancing:CreateAction"
+      values   = [
+        "CreateTargetGroup",
+        "CreateLoadBalancer"
+      ]
+    }
+    condition {
+      test     = "Null"
+      variable = "aws:RequestTag/elbv2.k8s.aws/cluster"
+      values   = ["false"]
+    }  
+  }
 }
 
 resource "aws_iam_policy" "load_balancer_controller" {
